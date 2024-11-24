@@ -7,16 +7,28 @@ public class FruitSlicer : MonoBehaviour
 {
     public LayerMask sliceableLayer;
     public Transform planePosition;
-
+    private HashSet<GameObject> recentlySlicedObjects = new HashSet<GameObject>();
 
     private void OnTriggerEnter(Collider other)
     {
         if ((sliceableLayer.value & (1 << other.gameObject.layer)) > 0)
         {
+            if (recentlySlicedObjects.Contains(other.gameObject))
+            {
+                return; // Skip if already processed recently
+            }
+
+            recentlySlicedObjects.Add(other.gameObject);
+            StartCoroutine(RemoveFromRecentlySliced(other.gameObject));
+
             SliceObject(other.gameObject);
         }
     }
-
+    private IEnumerator RemoveFromRecentlySliced(GameObject obj)
+    {
+        yield return new WaitForSeconds(0.1f); // Adjust delay as needed
+        recentlySlicedObjects.Remove(obj);
+    }
     private void SliceObject(GameObject fruit)
     {
         if (planePosition != null)
@@ -25,11 +37,33 @@ public class FruitSlicer : MonoBehaviour
 
             if (slicedObject != null)
             {
-                GameObject upperHull = slicedObject.CreateUpperHull(fruit, fruit.GetComponent<Renderer>().material);
-                GameObject lowerHull = slicedObject.CreateLowerHull(fruit, fruit.GetComponent<Renderer>().material);
-                AddHullComponents(upperHull);
-                AddHullComponents(lowerHull);
-                Destroy(fruit);
+                Material selectedMaterial = Resources.Load<Material>("Materials/CenterFruit_P");
+
+                if (selectedMaterial != null)
+                {
+                    GameObject upperHull = slicedObject.CreateUpperHull(fruit, selectedMaterial);
+                    GameObject lowerHull = slicedObject.CreateLowerHull(fruit, selectedMaterial);
+
+                    upperHull.transform.position = fruit.transform.position;
+                    lowerHull.transform.position = fruit.transform.position;
+
+                    upperHull.transform.rotation = fruit.transform.rotation;
+                    lowerHull.transform.rotation = fruit.transform.rotation;
+
+                    upperHull.transform.localScale = fruit.transform.localScale;
+                    lowerHull.transform.localScale = fruit.transform.localScale;
+
+                    AddHullComponents(upperHull);
+                    AddHullComponents(lowerHull);
+                    Destroy(fruit);
+
+                    Destroy(upperHull, 2f);
+                    Destroy(lowerHull, 2f);
+                }
+                else
+                {
+                    Debug.LogError("Material 'CenterFruit_P' not found!");
+                }
             }
         }
     }
@@ -37,15 +71,12 @@ public class FruitSlicer : MonoBehaviour
 
     private void AddHullComponents(GameObject hullObject)
     {
-        // Add MeshCollider and set to convex for proper collision
         MeshCollider collider = hullObject.AddComponent<MeshCollider>();
         collider.convex = true;
 
-        // Add Rigidbody to make sliced pieces fall
         Rigidbody rb = hullObject.AddComponent<Rigidbody>();
         rb.interpolation = RigidbodyInterpolation.Interpolate;
 
-        // Set parent to null if needed to separate the pieces visually
         hullObject.transform.SetParent(null);
     }
 

@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class FruitSpawner : MonoBehaviour
 {
+    public bool spawnFruits;
     public List<GameObject> fruitPrefabs;
     public float spawnInterval = 1f;
     public float shootForce = 10f;
@@ -16,6 +18,7 @@ public class FruitSpawner : MonoBehaviour
 
     void Start()
     {
+        spawnFruits = false;
         timer = 0f;
     }
 
@@ -25,7 +28,8 @@ public class FruitSpawner : MonoBehaviour
 
         if (timer >= spawnInterval)
         {
-            SpawnFruit();
+            if(spawnFruits)
+                SpawnFruit();
             timer = 0f;
         }
     }
