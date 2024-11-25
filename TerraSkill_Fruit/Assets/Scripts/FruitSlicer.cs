@@ -2,12 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using EzySlice;
+using System;
 
 public class FruitSlicer : MonoBehaviour
 {
     public LayerMask sliceableLayer;
     public Transform planePosition;
+    public List<Action> OnPointFruitSliced = new List<Action>();
+    public List<Action> OnBombSliced = new List<Action>();
     private HashSet<GameObject> recentlySlicedObjects = new HashSet<GameObject>();
+    
 
     private void OnTriggerEnter(Collider other)
     {
@@ -59,6 +63,26 @@ public class FruitSlicer : MonoBehaviour
 
                     Destroy(upperHull, 2f);
                     Destroy(lowerHull, 2f);
+
+                    var meniuFruitScript = fruit.GetComponentInParent<MenuFruitScript>();
+                    if(meniuFruitScript!= null)
+                    {
+                        //Vadinasi meniu fruitas
+                    }
+                    else
+                    {
+                        bool isBomb = false; //Prideti logika kaip atpazinti ar bomba ar nea
+                        if (isBomb)
+                        {
+                            foreach (var action in OnBombSliced)
+                                action();
+                        }
+                        else
+                        {
+                            foreach (var action in OnPointFruitSliced)
+                                action();
+                        }
+                    }
                 }
                 else
                 {

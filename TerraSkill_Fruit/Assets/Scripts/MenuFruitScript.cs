@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,6 +11,7 @@ public class MenuFruitScript : MonoBehaviour
     public GameObject timerComponent;
     public GameObject spawnersController;
     private Quaternion targetRotation;
+    public List<Action> OnStart = new List<Action>();
 
     void Start()
     {
@@ -40,22 +42,9 @@ public class MenuFruitScript : MonoBehaviour
         {
             Debug.LogWarning("Pradeti zaidima");
             Destroy(this.gameObject);
-            
-            if (timerComponent != null)
-            {
-                var comp = timerComponent.GetComponent<TimerScript>();
-                if(comp != null)
-                {
-                    comp.SetNewTime(180f);
-                    comp.startTimer = true;
-                }
-            }
 
-            var spanwerController = spawnersController.GetComponent<SpawningController>();
-            if (spanwerController != null)
-            {
-                spanwerController.StartSpawningFruits();
-            }
+            foreach(var action in OnStart)
+                action();
         }
     }
 }
