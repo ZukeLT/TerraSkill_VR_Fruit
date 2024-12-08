@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class MainController : MonoBehaviour
@@ -46,17 +47,21 @@ public class MainController : MonoBehaviour
         {
             menuFruit.OnStart.Add(StartTimer);
             menuFruit.OnStart.Add(StartSpawningFruits);
+            menuFruit.OnStart.Add(ResetPoints);
+            menuFruit.OnStart.Add(ResetHP);
         }
 
         if (timerScript != null)
         {
             timerScript.OnTimerEnded.Add(StopSpawningFruits);
+            timerScript.OnTimerEnded.Add(RespawnFruit);
         }
 
         if(hpController != null)
         {
             hpController.OnHPEnded.Add(StopSpawningFruits);
             hpController.OnHPEnded.Add(StopTimer);
+            hpController.OnHPEnded.Add(RespawnFruit);
         }
     }
 
@@ -92,7 +97,7 @@ public class MainController : MonoBehaviour
 
         if (timerScript != null)
         {
-            timerScript.SetNewTime(180f);
+            timerScript.SetNewTime(60f);
             timerScript.startTimer = true;
         }
         else
@@ -141,6 +146,13 @@ public class MainController : MonoBehaviour
             pointScript.points += 1;
         }
     }
+    public void ResetPoints()
+    {
+        if (pointScript != null)
+        {
+            pointScript.points = 0;
+        }
+    }
     public void OnBombSliced()
     {
         if (hpController != null)
@@ -148,5 +160,19 @@ public class MainController : MonoBehaviour
             hpController.TakeDamage();
         }
         Debug.Log("Bombaaaa!");
+    }
+    public void RespawnFruit()
+    {
+        if (playFruit != null)
+        {
+            playFruit.SetActive(true);
+        }
+    }
+    public void ResetHP()
+    {
+        if (hpController != null)
+        {
+            hpController.ResetHP();
+        }
     }
 }

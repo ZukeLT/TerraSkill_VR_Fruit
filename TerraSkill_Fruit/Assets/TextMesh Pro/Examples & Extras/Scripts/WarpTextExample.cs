@@ -23,9 +23,13 @@ namespace TMPro.Examples
 
         void Start()
         {
-            StartCoroutine(WarpText());
+            Rewarp();
         }
 
+        public void Rewarp()
+        {
+            StartCoroutine(WarpText());
+        }
 
         private AnimationCurve CopyAnimationCurve(AnimationCurve curve)
         {

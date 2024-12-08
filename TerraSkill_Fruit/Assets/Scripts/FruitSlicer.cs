@@ -8,8 +8,10 @@ public class FruitSlicer : MonoBehaviour
 {
     public LayerMask sliceableLayer;
     public Transform planePosition;
+    public ParticleSystem slicedFruitParticle;
     public List<Action> OnPointFruitSliced = new List<Action>();
     public List<Action> OnBombSliced = new List<Action>();
+    
     private HashSet<GameObject> recentlySlicedObjects = new HashSet<GameObject>();
     
 
@@ -59,7 +61,19 @@ public class FruitSlicer : MonoBehaviour
 
                     AddHullComponents(upperHull);
                     AddHullComponents(lowerHull);
-                    Destroy(fruit);
+
+                    Rigidbody upperRb = upperHull.AddComponent<Rigidbody>();
+                    Rigidbody lowerRb = lowerHull.AddComponent<Rigidbody>();
+
+                    Vector3 forceDirectionUpper = (upperHull.transform.position - fruit.transform.position).normalized + Vector3.up;
+                    Vector3 forceDirectionLower = (lowerHull.transform.position - fruit.transform.position).normalized - Vector3.up;
+
+                    if(upperRb != null)
+                        upperRb.AddForce(forceDirectionUpper * 10f, ForceMode.Impulse);
+                    if (lowerRb != null)
+                        lowerRb.AddForce(forceDirectionLower * 10f, ForceMode.Impulse);
+
+                    PlaySlicedFruitParticles(fruit);
 
                     Destroy(upperHull, 2f);
                     Destroy(lowerHull, 2f);
@@ -67,11 +81,13 @@ public class FruitSlicer : MonoBehaviour
                     var meniuFruitScript = fruit.GetComponentInParent<MenuFruitScript>();
                     if(meniuFruitScript!= null)
                     {
-                        //Vadinasi meniu fruitas
+                        //Vadinasi meniu fruitas - nenaikinam main body
                     }
                     else
                     {
-                        bool isBomb = false; //Prideti logika kaip atpazinti ar bomba ar nea
+                        Destroy(fruit);
+                        
+                        bool isBomb = fruit.name.ToLower().Contains("bomb"); //Prideti logika kaip atpazinti ar bomba ar nea
                         if (isBomb)
                         {
                             foreach (var action in OnBombSliced)
@@ -92,7 +108,19 @@ public class FruitSlicer : MonoBehaviour
         }
     }
 
+    private void PlaySlicedFruitParticles(GameObject fruit)
+    {
+        if (slicedFruitParticle != null && fruit != null)
+        {
+            ParticleSystem particleInstance = Instantiate(slicedFruitParticle, fruit.transform.position, fruit.transform.rotation);
 
+            particleInstance.transform.SetParent(fruit.transform.parent, true);
+            particleInstance.transform.localPosition = fruit.transform.localPosition;
+            particleInstance.Play();
+
+            Destroy(particleInstance.gameObject, particleInstance.main.duration + particleInstance.main.startLifetime.constantMax);
+        }
+    }
     private void AddHullComponents(GameObject hullObject)
     {
         MeshCollider collider = hullObject.AddComponent<MeshCollider>();
