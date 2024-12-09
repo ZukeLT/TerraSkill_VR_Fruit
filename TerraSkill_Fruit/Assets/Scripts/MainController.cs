@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.XR;
 
 public class MainController : MonoBehaviour
 {
@@ -19,10 +20,14 @@ public class MainController : MonoBehaviour
     private MenuFruitScript menuFruit;
     private FruitSlicer fruitSlicer;
     private HPController hpController;
+    public AudioClip[] sliceSounds;
+    public AudioSource sound;
+    public AudioSource BGMusic;
 
     // Start is called before the first frame update
     void Start()
     {
+        BGMusic.Play();
         if (timerComponent != null)
             timerScript = timerComponent.GetComponent<TimerScript>();
 
@@ -92,6 +97,20 @@ public class MainController : MonoBehaviour
             yield return null;
         }
     }
+
+    public void playSliceSound()
+    {
+        System.Random rand = new System.Random();
+        sound.clip = sliceSounds[rand.Next(0, sliceSounds.Length-1)];
+        sound.Play();
+    }
+
+    public void playBombSound()
+    {
+        sound.clip = sliceSounds[3];
+        sound.Play();
+    }
+
     public void StartTimer()
     {
 

@@ -11,9 +11,13 @@ public class FruitSlicer : MonoBehaviour
     public ParticleSystem slicedFruitParticle;
     public List<Action> OnPointFruitSliced = new List<Action>();
     public List<Action> OnBombSliced = new List<Action>();
-    
+    public MainController mainController;
     private HashSet<GameObject> recentlySlicedObjects = new HashSet<GameObject>();
-    
+
+    private void Start()
+    {
+        mainController = FindObjectOfType<MainController>();
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -74,6 +78,7 @@ public class FruitSlicer : MonoBehaviour
                         lowerRb.AddForce(forceDirectionLower * 10f, ForceMode.Impulse);
 
                     PlaySlicedFruitParticles(fruit);
+                    
 
                     Destroy(upperHull, 2f);
                     Destroy(lowerHull, 2f);
@@ -90,11 +95,13 @@ public class FruitSlicer : MonoBehaviour
                         bool isBomb = fruit.name.ToLower().Contains("bomb"); //Prideti logika kaip atpazinti ar bomba ar nea
                         if (isBomb)
                         {
+                            mainController.playBombSound();
                             foreach (var action in OnBombSliced)
                                 action();
                         }
                         else
                         {
+                            mainController.playSliceSound();
                             foreach (var action in OnPointFruitSliced)
                                 action();
                         }
